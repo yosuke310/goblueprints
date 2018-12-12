@@ -1,0 +1,46 @@
+<html>
+	<head><title>チャット</title></head>
+  <style>
+    input: { display: block; }
+    ul: { line-style: none; }
+  </style>
+	<body>
+    <ul id="messages"></ul>
+    WebSocket を使ったアプリケーション
+    <form id="chatbox">
+      <textarea></textarea>
+      <input type="submit" value="send" />
+    </form>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+  </script>
+  <script>
+    $(function() {
+      var socket = null;
+      var msgBox = $("#chatbox textarea");
+      var messages = $("#messages");
+      $("#chatbox").submit(function() {
+        if (!msgBox.val()) return false;
+        if (!socket) {
+          alert("error: socket is null");
+          return false;
+        }
+        socket.send(msgBox.val());
+        msgBox.val("");
+        return false;
+      });
+      if (!window["WebSocket"]) {
+        alert("error: socket is unavailable");
+      } else {
+        console.log("socket is available");
+        socket = new WebSocket("ws://{{.Host}}/room");
+        socket.onclose = function() {
+          alert("socket closed");
+        }
+        socket.onmessage = function(e) {
+          messages.append($("<li>").text(e.data));
+        }
+      }
+    });
+  </script>
+	</body>
+</html>
