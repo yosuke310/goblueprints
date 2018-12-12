@@ -4,9 +4,12 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
+
+	"github.com/yosuke310/goblueprints/chapter1/trace"
 )
 
 type templateHandler struct {
@@ -27,6 +30,7 @@ func main() {
 	var addr = flag.String("addr", ":8080", "app address")
 	flag.Parse()
 	r := newRoom()
+	r.tracer = trace.New(os.Stdout)
 	http.Handle("/", &templateHandler{filename: "chat.html"})
 	http.Handle("/room", r)
 
