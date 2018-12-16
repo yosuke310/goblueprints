@@ -8,6 +8,7 @@
     <ul id="messages"></ul>
     WebSocket を使ったアプリケーション
     <form id="chatbox">
+      {{.UserData.name}}:<br />
       <textarea></textarea>
       <input type="submit" value="send" />
     </form>
@@ -24,7 +25,7 @@
           alert("error: socket is null");
           return false;
         }
-        socket.send(msgBox.val());
+        socket.send(JSON.stringify({"Message": msgBox.val()}));
         msgBox.val("");
         return false;
       });
@@ -37,7 +38,12 @@
           alert("socket closed");
         }
         socket.onmessage = function(e) {
-          messages.append($("<li>").text(e.data));
+          console.log("socket is available");
+          var msg = eval("(" + e.data + ")");
+          messages.append($("<li>").append(
+            $("<strong>").text(msg.Name + ": "),
+            $("<span>").text(msg.Message)
+          ));
         }
       }
     });
