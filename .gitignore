@@ -12,3 +12,6 @@
 *.out
 
 .vscode
+db
+*.dat
+chapter5/socailpoll/twittervotes/env
