@@ -12,6 +12,7 @@
 *.out
 
 .vscode
-db
 *.dat
-chapter5/socailpoll/twittervotes/env
+chapter5/twittervotes/env
+chapter5/db/*
+!chapter5/db/.gitkeep
