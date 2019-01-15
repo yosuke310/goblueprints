@@ -13,6 +13,6 @@
 
 .vscode
 *.dat
-*/twittervotes/env
+**/env
 */db/*
 !*/db/.gitkeep
