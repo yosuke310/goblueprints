@@ -48,7 +48,7 @@ func withData(d *mgo.Session, fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		thisDb := d.Copy()
 		defer thisDb.Close()
-		SetVar(r, "db", thisDb.DB("polls"))
+		SetVar(r, "db", thisDb.DB("ballots"))
 		fn(w, r)
 	}
 }
