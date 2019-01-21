@@ -1,5 +1,16 @@
 package meander
 
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
+)
+
 type Place struct {
 	*googleGeometry `json:"geometry"`
 	Name            string         `json:"name"`
@@ -37,4 +48,74 @@ type googleLocation struct {
 type googlePhoto struct {
 	PhotoRef string `json:"photo_reference"`
 	URL      string `json:"url"`
+}
+
+type Query struct {
+	Lat          float64
+	Lng          float64
+	Journey      []string
+	Radius       int
+	CostRangeStr string
+}
+
+func (q *Query) find(types string) (*googleResponse, error) {
+	u := "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+	vals := make(url.Values)
+	vals.Set("location", fmt.Sprintf("%g,%g", q.Lat, q.Lng))
+	vals.Set("radius", fmt.Sprintf("%d", q.Radius))
+	vals.Set("types", types)
+	vals.Set("key", APIKey)
+	if len(q.CostRangeStr) > 0 {
+		r := ParseCostRange(q.CostRangeStr)
+		vals.Set("minprice", fmt.Sprintf("%d", int(r.From)-1))
+		vals.Set("maxprice", fmt.Sprintf("%d", int(r.To)-1))
+	}
+	log.Println(u + "?" + vals.Encode())
+	res, err := http.Get(u + "?" + vals.Encode())
+	if err != nil {
+		return nil, err
+	}
+	// bodyBytes, _ := ioutil.ReadAll(res.Body)
+	// bodyString := string(bodyBytes)
+	// log.Println(bodyString)
+	defer res.Body.Close()
+	var response googleResponse
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+func (q *Query) Run() []interface{} {
+	rand.Seed(time.Now().UnixNano())
+	var w sync.WaitGroup
+	var l sync.Mutex
+	places := make([]interface{}, len(q.Journey))
+	for i, r := range q.Journey {
+		w.Add(1)
+		go func(types string, i int) {
+			defer w.Done()
+			response, err := q.find(types)
+			if err != nil {
+				log.Println("Find failed:", err)
+				return
+			}
+			if len(response.Results) == 0 {
+				log.Println("Not Found:", types)
+				return
+			}
+			for _, result := range response.Results {
+				for _, photo := range result.Photos {
+					photo.URL = "httos://maps.googleapis.com/maps/api/place/photo?" +
+						"maxwidth=1000&photoreference=" + photo.PhotoRef + "&key=" + APIKey
+				}
+			}
+			randI := rand.Intn(len(response.Results))
+			l.Lock()
+			places[i] = response.Results[randI]
+			l.Unlock()
+		}(r, i)
+	}
+	w.Wait()
+	return places
 }
