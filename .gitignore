@@ -16,3 +16,10 @@
 **/env
 */db/*
 !*/db/.gitkeep
+
+chapter8/backup/cmds/backup/archive/*
+!chapter8/backup/cmds/backup/archive/.gitkeep
+chapter8/backup/cmds/backup/backupdata/*
+!chapter8/backup/cmds/backup/backupdata/.gitkeep
+chapter8/backup/cmds/backupd/test
+chapter8/backup/cmds/backupd/test2
